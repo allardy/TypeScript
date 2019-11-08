@@ -391,6 +391,7 @@ interface Array<T> { length: number; [n: number]: T; }`
         public require: ((initialPath: string, moduleName: string) => RequireResult) | undefined;
         watchFile: HostWatchFile;
         watchDirectory: HostWatchDirectory;
+        setTimerOnNextChildWatchUpdate: () => void;
         constructor(
             public withSafeList: boolean,
             fileOrFolderorSymLinkList: readonly FileOrFolderOrSymLink[],
@@ -411,7 +412,7 @@ interface Array<T> { length: number; [n: number]: T; }`
             this.runWithFallbackPolling = !!runWithFallbackPolling;
             const tscWatchFile = this.environmentVariables && this.environmentVariables.get("TSC_WATCHFILE");
             const tscWatchDirectory = this.environmentVariables && this.environmentVariables.get("TSC_WATCHDIRECTORY");
-            const { watchFile, watchDirectory } = createSystemWatchFunctions({
+            const { watchFile, watchDirectory, setTimerOnNextChildWatchUpdate } = createSystemWatchFunctions({
                 // We dont have polling watch file
                 // it is essentially fsWatch but lets get that separate from fsWatch and
                 // into watchedFiles for easier testing
@@ -423,6 +424,7 @@ interface Array<T> { length: number; [n: number]: T; }`
                     this.watchFileWorker.bind(this),
                 getModifiedTime: this.getModifiedTime.bind(this),
                 setTimeout: this.setTimeout.bind(this),
+                clearTimeout: this.clearTimeout.bind(this),
                 fsWatch: this.fsWatch.bind(this),
                 fileExists: this.fileExists.bind(this),
                 useCaseSensitiveFileNames: this.useCaseSensitiveFileNames,
@@ -435,6 +437,7 @@ interface Array<T> { length: number; [n: number]: T; }`
             });
             this.watchFile = watchFile;
             this.watchDirectory = watchDirectory;
+            this.setTimerOnNextChildWatchUpdate = setTimerOnNextChildWatchUpdate;
             this.reloadFS(fileOrFolderorSymLinkList);
         }
 

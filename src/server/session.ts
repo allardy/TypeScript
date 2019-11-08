@@ -2519,6 +2519,7 @@ namespace ts.server {
         public executeWithRequestId<T>(requestId: number, f: () => T) {
             try {
                 this.setCurrentRequest(requestId);
+                if (this.host.setTimerOnNextChildWatchUpdate) this.host.setTimerOnNextChildWatchUpdate();
                 return f();
             }
             finally {
